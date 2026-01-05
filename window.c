@@ -40,6 +40,7 @@ window_create(const char *name, const int resizable, const int width, const int 
 	wc.lpfnWndProc = WndProc;
 	wc.hInstance = GetModuleHandle(NULL);
 	wc.lpszClassName = class_name;
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	if (!RegisterClass(&wc)) {
 		MessageBox(NULL, TEXT("Could not register window class"), NULL, MB_ICONERROR);
 		exit(EXIT_FAILURE);
