@@ -1,6 +1,6 @@
 #include "window.h"
 #include <stdlib.h>
-#include <windows.h>
+#include <windowsx.h>
 #include <GL/gl.h>
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -30,6 +30,7 @@ static const PIXELFORMATDESCRIPTOR pfd = {
 	0, 0, 0
 };
 static int keys[0xff];
+static int mouse_x, mouse_y;
 
 void
 window_create(const char *name, const int resizable, const int width, const int height)
@@ -97,7 +98,20 @@ window_update(void)
 	return 1;
 }
 
-int input_key_down(input_t key) {
+int
+input_mouse_x(void)
+{
+	return mouse_x;
+}
+
+int
+input_mouse_y(void)
+{
+	return mouse_y;
+}
+
+int
+input_key_down(input_t key) {
 	return keys[key];
 }
 
@@ -122,6 +136,10 @@ WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return 0;
 	case WM_KEYUP:
 		keys[wParam] = 0;
+		return 0;
+	case WM_MOUSEMOVE:
+		mouse_x = GET_X_LPARAM(lParam);
+		mouse_y = GET_Y_LPARAM(lParam);
 		return 0;
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);

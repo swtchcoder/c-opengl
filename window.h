@@ -74,6 +74,8 @@ typedef enum {
 
 void window_create(const char *name, const int resizable, const int width, const int height);
 int window_update(void);
+int input_mouse_x(void);
+int input_mouse_y(void);
 int input_key_down(input_t key);
 void window_destroy(void);
 
