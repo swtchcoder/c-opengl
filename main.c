@@ -36,4 +36,9 @@ void
 draw(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
+	window_triangle(
+		-0.5f, -0.5f,
+		0.5f, -0.5f,
+		0.0f,  0.5f
+	);
 }

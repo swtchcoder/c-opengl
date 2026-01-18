@@ -32,6 +32,20 @@ static const PIXELFORMATDESCRIPTOR pfd = {
 };
 static int keys[0xff];
 static int mouse_x, mouse_y;
+static const char *vertex =
+	"#version 330 core\n"
+	"layout (location = 0) in vec2 pos;\n"
+	"void main() {\n"
+	"    gl_Position = vec4(pos, 0.0, 1.0);\n"
+	"}\n";
+static const char *fragment =
+	"#version 330 core\n"
+	"out vec4 FragColor;\n"
+	"void main() {\n"
+	"    FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+	"}\n";
+static GLuint program;
+static GLuint vao, vbo;
 
 void
 window_create(const char *name, const int resizable, const int width, const int height)
@@ -85,6 +99,30 @@ window_create(const char *name, const int resizable, const int width, const int 
 		MessageBox(NULL, TEXT("Could not load GLAD"), NULL, MB_ICONERROR);
 		exit(EXIT_FAILURE);
 	}
+	/* setup shader program */
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vs, 1, &vertex, NULL);
+	glCompileShader(vs);
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, &fragment, NULL);
+	glCompileShader(fs);
+	program = glCreateProgram();
+	glAttachShader(program, vs);
+	glAttachShader(program, fs);
+	glLinkProgram(program);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
+	/* setup triangle buffers */
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, NULL, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 	ShowWindow(hwnd, SW_SHOW);
 	UpdateWindow(hwnd);
 }
@@ -121,12 +159,33 @@ input_key_down(input_t key) {
 }
 
 void
+window_triangle(float x_1, float y_1, float x_2, float y_2, float x_3, float y_3)
+{
+	float vertices[6] = {
+		x_1, y_1,
+		x_2, y_2,
+		x_3, y_3
+	};
+	glUseProgram(program);
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindVertexArray(0);
+}
+
+void
 window_destroy(void)
 {
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(ctx);
 	ReleaseDC(hwnd, hdc);
 	DestroyWindow(hwnd);
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteVertexArrays(1, &vao);
+	glDeleteProgram(program);
+
 }
 
 static LRESULT CALLBACK

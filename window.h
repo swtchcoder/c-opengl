@@ -77,6 +77,7 @@ int window_update(void);
 int input_mouse_x(void);
 int input_mouse_y(void);
 int input_key_down(input_t key);
+void window_triangle(float x_1, float y_1, float x_2, float y_2, float x_3, float y_3);
 void window_destroy(void);
 
 #endif
