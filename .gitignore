@@ -1,5 +1,5 @@
 **/*.o
 **/*.exe
-**/assets.h
-**/assets.bin
+/assets/assets_meta.h
+/assets/assets.bin
 /external/

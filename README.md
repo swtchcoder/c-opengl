@@ -20,8 +20,9 @@ and copy *include* and *src* into *external* folder.
 	* [x] Empaqueter les shaders
 	* [x] Empaqueter les images
 	* [ ] Compresser les images
-	* [ ] Empaqueter les polices
-		* [ ] Convertir les polices en spritesheets
+	* [x] Convertir les polices en spritesheets
+	* [x] Empaqueter les polices
+	* [ ] Ajouter la meta des polices
 	* [ ] Empaqueter les fichiers audio
 * [ ] Lire les donnees empaquetees
 * [ ] Appliquer une texture
