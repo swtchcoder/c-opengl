@@ -6,13 +6,11 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb/stb_truetype.h"
 #include "config.h"
+#include "file.h"
 
 static void textual_process(void);
 static void image_process(void);
 static void font_process(void);
-static size_t file_load(const char *path, unsigned char **buffer);
-static size_t file_read(FILE *f, unsigned char **buffer);
-static size_t file_size(FILE *f);
 static int pow2_next(int a);
 
 static FILE *data;
@@ -20,7 +18,6 @@ static FILE *meta;
 static const size_t textual_count = sizeof(textuals) / sizeof(source_t);
 static source_t source;
 static const font_t *source_font;
-static FILE *f;
 static const size_t image_count = sizeof(images) / sizeof(source_t);
 static const size_t font_count = sizeof(fonts) / sizeof(font_t);
 static size_t size;
@@ -40,6 +37,7 @@ main(void)
 		perror("assets_meta.h");
 		return 1;
 	}
+	fprintf(meta, "#include <stdio.h>\n\n");
 	for (i = 0; i < textual_count; i++) {
 		source = textuals[i];
 		textual_process();
@@ -62,7 +60,7 @@ textual_process(void)
 {
 	unsigned char *buffer;
 	size_t written;
-	size = file_load(source.filename, &buffer);
+	buffer = file_load(source.filename, &size);
 	if (!size) {
 		perror(source.filename);
 		exit(EXIT_FAILURE);
@@ -79,7 +77,6 @@ textual_process(void)
 "\n",
 		source.name, index, source.name, index + size);
 	index += size;
-	fclose(f);
 }
 
 static void
@@ -92,7 +89,7 @@ image_process(void)
 		fprintf(stderr, "%s: Error loading image\n", source.filename);
 		exit(EXIT_FAILURE);
 	}
-	size = width * height;
+	size = width * height * channels;
 	sizep = fwrite(buffer, 1, size, data);
 	if (sizep != size) {
 		perror(source.filename);
@@ -127,7 +124,8 @@ font_process(void)
 	float x, y;
 	stbtt_aligned_quad quads[95];
 	stbtt_packedchar chars[95];
-	if (!file_load(source_font->filename, &buffer)) {
+	buffer = file_load(source_font->filename, &bitmap_size);
+	if (!buffer) {
 		perror("file_load()");
 		exit(EXIT_FAILURE);
 	}
@@ -161,71 +159,12 @@ font_process(void)
 		x = y = 0.0f;
 		stbtt_GetPackedQuad(chars, dim, dim, i, &x, &y, &quads[i], 0);
 	}
-	if (fwrite(bitmap, sizeof(unsigned char), bitmap_size, data) != dim * dim) {
+	if (fwrite(bitmap, 1, bitmap_size, data) != dim * dim) {
 		perror(source_font->filename);
 		exit(EXIT_FAILURE);
 	}
 	free(bitmap);
 	index += bitmap_size;
-}
-
-static size_t
-file_load(const char *path, unsigned char **buffer)
-{
-	FILE *f;
-	size_t size;
-	f = fopen(path, "rb");
-	if (!f) {
-		return 0;
-	}
-	size = file_read(f, buffer);
-	fclose(f);
-	return size;
-}
-
-static size_t
-file_read(FILE *f, unsigned char **buffer)
-{
-	size_t size;
-	size_t readen;
-	unsigned char *tmp;
-	size = file_size(f);
-	if (!size) {
-		return 0;
-	}
-	*buffer = malloc(size);
-	if (!*buffer) {
-		return 0;
-	}
-	readen = fread(*buffer, 1, size, f);
-	if (readen != size) {
-		if (ferror(f)) {
-			free(*buffer);
-			*buffer = NULL;
-			return 0;
-		}
-		tmp = realloc(*buffer, readen);
-		if (!tmp) {
-			free(*buffer);
-			*buffer = NULL;
-			return 0;
-		}
-		*buffer = tmp;
-	}
-	return readen;
-}
-
-static size_t
-file_size(FILE *f)
-{
-	long size;
-	fseek(f, 0, SEEK_END);
-	size = ftell(f);
-	if (size < 0) {
-		return 0;
-	}
-	rewind(f);
-	return size;
 }
 
 static int

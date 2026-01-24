@@ -10,7 +10,7 @@ typedef struct {
 } font_t;
 
 const source_t textuals[] = {
-	{"main.c", "main"},
+	{"assets_export.c", "main"},
 	{"config.h", "config"}
 };
 
