@@ -1,5 +1,5 @@
 CC=cc
 CFLAGS=-Wall -Wextra -std=c99
 LIBS=
-SRC=main.c
+SRC=assets_export.c
 OBJ=$(SRC:.c=.o)
